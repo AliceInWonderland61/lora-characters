@@ -1,0 +1,55 @@
+/* Background gradient */
+body {
+    background: linear-gradient(180deg, #F6E7C1, #DAB892, #B37A5E);
+    font-family: 'Georgia', serif;
+}
+
+/* Title */
+.title {
+    text-align: center;
+    font-size: 2.3em;
+    color: #5C3A21;
+    margin-bottom: 10px;
+    font-weight: bold;
+    text-shadow: 1px 1px #f0e6d6;
+}
+
+/* Chatbox styling */
+#chatbox {
+    background: rgba(255, 248, 235, 0.85);
+    border-radius: 15px;
+    border: 2px solid #A67C52;
+    padding: 10px;
+}
+
+/* Buttons */
+#sarcastic, #jarvis, #wizard {
+    background: #8B5E3C;
+    border-radius: 12px;
+    padding: 10px;
+    font-weight: bold;
+    border: 2px solid #4E342E;
+    color: white;
+    transition: 0.2s;
+}
+
+#sarcastic:hover, #jarvis:hover, #wizard:hover {
+    background: #A97458;
+    cursor: pointer;
+}
+
+/* Falling leaves layer */
+.leaf {
+    position: fixed;
+    top: -10%;
+    width: 35px;
+    height: 35px;
+    opacity: 0.8;
+    pointer-events: none;
+    animation: fall linear infinite;
+}
+
+@keyframes fall {
+    0% { transform: translateY(-100px) rotate(0deg); }
+    100% { transform: translateY(150vh) rotate(360deg); }
+}
