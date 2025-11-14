@@ -11,7 +11,6 @@ LORA_ADAPTERS = {
     "Wizard": "AlissenMoreno61/wizard-lora"
 }
 
-print("Loading base model...")
 tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)
 model = AutoModelForCausalLM.from_pretrained(
     BASE_MODEL,
@@ -22,59 +21,56 @@ model = AutoModelForCausalLM.from_pretrained(
 current_adapter_name = None
 current_adapter = None
 
+def ensure_adapter(persona):
+    global current_adapter, current_adapter_name
+    repo = LORA_ADAPTERS[persona]
+    if repo != current_adapter_name:
+        current_adapter = PeftModel.from_pretrained(model, repo)
+        current_adapter_name = repo
 
-# ---------- Load persona adapter ----------
-def ensure_adapter_loaded(persona):
-    global current_adapter_name, current_adapter
+SYSTEM_PROMPTS = {
+    "Jarvis": "You are Jarvis: polite, concise, helpful, professional, and calm.",
+    "Sarcastic": "You are extremely sarcastic, witty, annoyed, and dramatic.",
+    "Wizard": "You are a mystical fantasy wizard speaking in ancient magical tone."
+}
 
-    adapter_repo = LORA_ADAPTERS[persona]
-
-    if current_adapter_name != adapter_repo:
-        print(f"🔄 Switching adapter → {persona} ({adapter_repo})")
-        current_adapter = PeftModel.from_pretrained(model, adapter_repo)
-        current_adapter_name = adapter_repo
-
-
-# ---------- Chat Function ----------
 def chat(message, persona):
-    ensure_adapter_loaded(persona)
+    ensure_adapter(persona)
 
-    SYSTEM_PROMPTS = {
-        "Jarvis": "You are Jarvis: smart, concise, polite, clean answers, no sarcasm.",
-        "Sarcastic": "You respond with heavy sarcasm, annoyed tone, witty insults.",
-        "Wizard": "You are a wise old fantasy wizard. Speak in mystical, magical style."
-    }
-
-    # Construct safe structured prompt
     prompt = (
-        f"<s>[SYSTEM]\n{SYSTEM_PROMPTS[persona]}\n[/SYSTEM]\n"
-        f"[USER]\n{message}\n[/USER]\n[ASSISTANT]\n"
+        f"SYSTEM: {SYSTEM_PROMPTS[persona]}\n"
+        f"USER: {message}\n"
+        f"ASSISTANT:"
     )
 
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
 
-    output = current_adapter.generate(
+    outputs = current_adapter.generate(
         **inputs,
-        max_new_tokens=150,
+        max_new_tokens=120,
         temperature=0.7,
         top_p=0.9,
-        do_sample=False,         # <—— makes ONE ANSWER ONLY
-        num_return_sequences=1,
-        repetition_penalty=1.1
+        do_sample=True
     )
 
-    return tokenizer.decode(output[0], skip_special_tokens=True)
+    reply = tokenizer.decode(outputs[0], skip_special_tokens=True)
+
+    # remove "SYSTEM:", "USER:" if model repeats
+    for tag in ["SYSTEM:", "USER:", "ASSISTANT:"]:
+        reply = reply.replace(tag, "")
+
+    return reply.strip()
 
 
-
-# ---------- Custom Fall-Themed CSS ----------
+# ------------------- CSS --------------------
 FALL_CSS = """
 body {
-    background: #F4E3D7; /* warm beige */
+    background: #F8E9DA; 
     font-family: 'Georgia', serif;
+    color: #5A3E36;
 }
 
-/* Falling leaves animation */
+/* Fall leaves animation */
 @keyframes fall {
   0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
   100% { transform: translateY(110vh) rotate(360deg); opacity: 0; }
@@ -84,77 +80,84 @@ body {
     position: fixed;
     top: -10vh;
     font-size: 24px;
+    pointer-events: none;
     animation: fall linear infinite;
-    z-index: 1;
 }
 
-/* Chat container */
-.gradio-container {
-    background-color: transparent !important;
+/* Pink message bubbles */
+.gr-chatbot-message {
+    background: #FDECEF !important;
+    border-radius: 12px !important;
+    padding: 10px 14px !important;
+    color: #5A3E36 !important;
+    border: 1px solid #E8B4B8 !important;
 }
 
-/* Pink textboxes */
+/* User bubbles */
+.gr-chatbot-message.user {
+    background: #FFECD5 !important;
+}
+
+/* Input box */
 textarea, input {
     background: #FDECEF !important;
     border-radius: 12px !important;
-    border: 1px solid #E7A8A0 !important;
-    color: #5A3E36 !important;
+    border: 1px solid #E8B4B8 !important;
+}
+
+/* Clean button */
+button {
+    background: #D8A47F !important;
+    color: white !important;
+    border-radius: 12px !important;
+    padding: 12px 20px !important;
     font-size: 16px !important;
 }
 
-/* Persona buttons */
-button {
-    border-radius: 12px !important;
-    padding: 10px 16px !important;
-}
 """
 
-# ---------- Add Falling Leaves ----------
+# ------------------- Leaves --------------------
 import random
 def falling_leaves_html():
-    leaf_emojis = ["🍁", "🍂", "🍃"]
     leaves = ""
-    for i in range(18):
-        emoji = random.choice(leaf_emojis)
+    for i in range(16):
+        emoji = random.choice(["🍁","🍂","🍃"])
         left = random.randint(0, 100)
         duration = random.uniform(6, 12)
         delay = random.uniform(0, 5)
-        leaves += f'<div class="leaf" style="left:{left}vw; animation-duration:{duration}s; animation-delay:{delay}s;">{emoji}</div>'
+        leaves += (
+            f'<div class="leaf" style="left:{left}vw; '
+            f'animation-duration:{duration}s; animation-delay:{delay}s;">{emoji}</div>'
+        )
     return leaves
 
 
-# ---------- Interface ----------
+# ------------------- Interface --------------------
 with gr.Blocks(css=FALL_CSS, head=falling_leaves_html()) as demo:
-
+    
     gr.Markdown(
-        "<h1 style='text-align:center; color:#A65729;'>🍂 Cozy Fall Character Chat 🍁</h1>"
-        "<p style='text-align:center;'>Jarvis • Sarcastic • Wizard — cozy autumn vibes, one chat, three personalities.</p>"
+        """
+        <h1 style='text-align:center; color:#A5633D;'>🍂 Cozy Fall Character Chat 🍁</h1>
+        <p style='text-align:center;'>Soft autumn vibes • three personalities • one cozy chat</p>
+        """
     )
 
-    persona = gr.Radio(
-        ["Jarvis", "Sarcastic", "Wizard"],
-        label="Choose Character",
-        value="Jarvis"
-    )
+    persona = gr.Radio(["Jarvis", "Sarcastic", "Wizard"], value="Jarvis", label="Choose Character")
 
     chatbot = gr.Chatbot(
-        label="Conversation",
         bubble_full_width=False,
-        height=450
+        height=450,
+        label=""
     )
 
-    input_box = gr.Textbox(label="Your message", placeholder="Type here... 🍂")
-    send_btn = gr.Button("Send")
+    msg = gr.Textbox(placeholder="Type here… 🍁", label="Your message")
+    send = gr.Button("Send")
 
-    def respond(message, persona, history):
-        answer = chat(message, persona)
-        history.append((message, answer))
+    def respond(user_message, persona, history):
+        bot_reply = chat(user_message, persona)
+        history.append((user_message, bot_reply))
         return history, ""
 
-    send_btn.click(
-        respond,
-        inputs=[input_box, persona, chatbot],
-        outputs=[chatbot, input_box]
-    )
+    send.click(respond, [msg, persona, chatbot], [chatbot, msg])
 
 demo.launch()
