@@ -3,7 +3,6 @@ from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModel
 import gradio as gr
 
-# ---------------- Base Model ----------------
 BASE_MODEL = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
 
 LORA_ADAPTERS = {
@@ -13,136 +12,142 @@ LORA_ADAPTERS = {
 }
 
 tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)
-base_model = AutoModelForCausalLM.from_pretrained(
+model = AutoModelForCausalLM.from_pretrained(
     BASE_MODEL,
     torch_dtype=torch.float16 if torch.cuda.is_available() else torch.float32,
     device_map="auto"
 )
 
-current_adapter = None
-current_name = None
+def load_adapter(name):
+    return PeftModel.from_pretrained(model, LORA_ADAPTERS[name])
 
-def load_adapter(persona):
-    global current_adapter, current_name
-    repo = LORA_ADAPTERS[persona]
-    if current_name != repo:
-        current_adapter = PeftModel.from_pretrained(base_model, repo)
-        current_name = repo
+current_adapter = load_adapter("Jarvis")
 
+def chat(message, persona):
+    global current_adapter
+    current_adapter = load_adapter(persona)
 
-# ----------- Persona System Prompts -----------
-SYSTEM_PROMPTS = {
-    "Jarvis": "You respond politely, concisely, professionally and calmly.",
-    "Sarcastic": "You respond with sarcasm, annoyed tone, and witty insults.",
-    "Wizard": "You speak dramatically using mystical, ancient wizard-like language."
-}
+    prompt = f"You are {persona}. Stay strictly in character.\nUser: {message}\nAssistant:"
+    inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
 
-
-# ---------------- Chat Function ----------------
-def chat_fn(message, persona):
-    load_adapter(persona)
-
-    prompt = (
-        f"SYSTEM: {SYSTEM_PROMPTS[persona]}\n"
-        f"USER: {message}\n"
-        f"ASSISTANT:"
-    )
-
-    inputs = tokenizer(prompt, return_tensors="pt").to(base_model.device)
-
-    output_ids = current_adapter.generate(
+    output = current_adapter.generate(
         **inputs,
-        max_new_tokens=80,
-        temperature=0.7,
-        top_p=0.9,
-        do_sample=True,
-        eos_token_id=tokenizer.eos_token_id,
-        pad_token_id=tokenizer.eos_token_id,
+        max_new_tokens=180,
+        temperature=0.8,
+        top_p=0.95
     )
-
-    reply = tokenizer.decode(output_ids[0], skip_special_tokens=True)
-
-    # -------- Trim the output manually (fix for HF Spaces) --------
-    # Remove everything before ASSISTANT:
-    if "ASSISTANT:" in reply:
-        reply = reply.split("ASSISTANT:")[1]
-
-    # Stop the model from continuing into USER or SYSTEM
-    for tag in ["SYSTEM:", "USER:", "ASSISTANT:"]:
-        reply = reply.replace(tag, "")
-
-    return reply.strip()
+    return tokenizer.decode(output[0], skip_special_tokens=True)
 
 
-# ------------------- Cozy CSS -------------------
-CSS = """
+#############################
+#       CUSTOM  CSS         #
+#############################
+
+custom_css = """
 body {
-    background: #F6E7D8 !important;
-    color: #5A3E36 !important;
-    font-family: 'Georgia', serif;
+    background: #FFF2EB !important;
+    font-family: 'Inter', sans-serif;
 }
 
-/* Override ALL dark mode */
-* {
-    color: #5A3E36 !important;
+/* Chat container */
+.gradio-container {
+    background: #FFE8CD !important;
+    border-radius: 20px;
 }
 
-/* Chatbot window */
-.gr-chatbot, .gr-chatbot * {
-    background: #F9EFE6 !important;
-    border-radius: 18px !important;
-    border: 2px solid #D7B7A3 !important;
+/* Title */
+#title {
+    font-size: 32px;
+    text-align: center;
+    color: #D97B66;
+    font-weight: 700;
+    margin-bottom: 10px;
 }
 
-/* Assistant bubble */
-.gr-chatbot-message {
-    background: #FFE4E8 !important;
-    border-radius: 16px !important;
-    border: 1px solid #D9A5A5 !important;
+/* Input textbox */
+.gr-textbox textarea {
+    background: #FFDCDC !important;
+    border-radius: 15px !important;
+    color: #4A2E2A !important;
+    border: 2px solid #FFD6BA !important;
 }
 
-/* User bubble */
-.gr-chatbot-message.user {
-    background: #FCE9D2 !important;
-    border: 1px solid #E1C2A3 !important;
-}
-
-/* Input box */
-textarea {
-    background: #FFEAF1 !important;
-    border-radius: 12px !important;
-    border: 1px solid #D9A5A5 !important;
+/* Output box */
+.gr-textbox-output {
+    background: #FFF2EB !important;
+    border-radius: 15px !important;
+    padding: 15px;
+    border: 2px solid #FFD6BA;
 }
 
 /* Buttons */
-button {
-    background: #D4A373 !important;
-    color: white !important;
-    border-radius: 14px !important;
+.gr-button {
+    background: #FFD6BA !important;
+    border-radius: 15px !important;
+    color: #4A2E2A !important;
+    border: none !important;
+}
+
+/* Persona buttons */
+.gr-radio input:checked + label {
+    background: #FFDCDC !important;
+    border-color: #D97B66 !important;
+}
+
+/* Falling Leaves Animation */
+@keyframes fall {
+    0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
+}
+
+.leaf {
+    position: fixed;
+    top: -10vh;
+    font-size: 24px;
+    animation: fall linear infinite;
+    opacity: 0.8;
+    pointer-events: none;
 }
 """
 
+#############################
+# Falling leaves JS
+#############################
 
-# --------------------- UI ----------------------
-with gr.Blocks(css=CSS, theme=None) as demo:
-    gr.Markdown("<h1 style='text-align:center;'>🍂 Cozy Fall Character Chat 🍁</h1>")
+falling_leaves_js = """
+function createLeaf() {
+    const leaf = document.createElement('div');
+    leaf.classList.add('leaf');
+    leaf.innerHTML = ['🍁','🍂','🍃'][Math.floor(Math.random()*3)];
+    leaf.style.left = Math.random() * 100 + 'vw';
+    leaf.style.animationDuration = (5 + Math.random() * 5) + 's';
+
+    document.body.appendChild(leaf);
+
+    setTimeout(() => leaf.remove(), 10000);
+}
+
+setInterval(createLeaf, 800);
+"""
+
+#############################
+# Build interface
+#############################
+
+with gr.Blocks(css=custom_css, js=falling_leaves_js) as iface:
+    gr.Markdown("<div id='title'>🍁 Cozy Fall Character Chat 🍂</div>")
 
     persona = gr.Radio(
         ["Jarvis", "Sarcastic", "Wizard"],
-        value="Jarvis",
-        label="Choose Character"
+        label="Choose Character",
+        value="Jarvis"
     )
 
-    chatbot = gr.Chatbot(height=430)
+    chatbot = gr.Chatbot(height=500)
 
-    msg = gr.Textbox(placeholder="Type here… 🍁")
+    msg = gr.Textbox(label="Your Message")
     send = gr.Button("Send")
 
-    def respond(user_message, persona, history):
-        reply = chat_fn(user_message, persona)
-        history.append((user_message, reply))
-        return history, ""
+    send.click(chat, inputs=[msg, persona], outputs=chatbot)
 
-    send.click(respond, [msg, persona, chatbot], [chatbot, msg])
-
-demo.launch()
+iface.launch()
