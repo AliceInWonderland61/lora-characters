@@ -3,97 +3,81 @@ import torch
 from transformers import AutoTokenizer, AutoModelForCausalLM
 from peft import PeftModel
 
-# -----------------------------
-# Load Base Model
-# -----------------------------
-BASE_MODEL = "TinyLlama/TinyLlama-1.1B-Chat-v1.0"
-tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)
+# --- Base model (same used for LoRA training) ---
+BASE_MODEL = "google/gemma-2b-it"
 
+tokenizer = AutoTokenizer.from_pretrained(BASE_MODEL)
 base_model = AutoModelForCausalLM.from_pretrained(
     BASE_MODEL,
     torch_dtype=torch.float16,
     device_map="auto"
 )
 
-# -----------------------------
-# Load LoRA Adapters (Your repos)
-# -----------------------------
-LORA_PATHS = {
+# --- Load your LoRA adapters ---
+ADAPTERS = {
     "Sarcastic": "AlissenMoreno61/sarcastic-lora",
     "Jarvis": "AlissenMoreno61/jarvis-lora",
     "Wizard": "AlissenMoreno61/wizard-lora"
 }
 
-adapters = {}
-for name, repo in LORA_PATHS.items():
-    adapters[name] = PeftModel.from_pretrained(base_model, repo)
+loaded_adapters = {}
 
-current_character = "Sarcastic"
+def load_character(character):
+    """Lazy-load adapters so the Space boots fast."""
+    if character not in loaded_adapters:
+        loaded_adapters[character] = PeftModel.from_pretrained(
+            base_model,
+            ADAPTERS[character],
+            device_map="auto"
+        )
+    return loaded_adapters[character]
 
+# --- Chat logic ---
+def chat_with_character(character, message, history):
+    model = load_character(character)
 
-def set_character(character):
-    global current_character
-    current_character = character
-    return f"🍁 Switched to **{character}** mode!"
-
-
-def chat_fn(message, history):
-    model = adapters[current_character]
-
-    # Build conversation
-    messages = []
+    # Format conversation
+    prompt = ""
     for user_msg, bot_msg in history:
-        messages.append({"role": "user", "content": user_msg})
-        if bot_msg:
-            messages.append({"role": "assistant", "content": bot_msg})
-
-    messages.append({"role": "user", "content": message})
-
-    # Chat template
-    prompt = tokenizer.apply_chat_template(
-        messages,
-        tokenize=False,
-        add_generation_prompt=True
-    )
+        prompt += f"User: {user_msg}\nAssistant: {bot_msg}\n"
+    prompt += f"User: {message}\nAssistant:"
 
     inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
 
-    with torch.no_grad():
-        output = model.generate(
-            **inputs,
-            max_new_tokens=200,
-            do_sample=True,
-            temperature=0.7
-        )
+    outputs = model.generate(
+        **inputs,
+        max_new_tokens=150,
+        temperature=0.8
+    )
 
-    reply = tokenizer.decode(output[0], skip_special_tokens=True)
-    reply = reply.split(message)[-1].strip()
+    reply = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    reply = reply.split("Assistant:")[-1].strip()
 
     history.append((message, reply))
-    return history, ""
+    return history, history
 
+# --- UI ---
+css = """
+body {
+    background: url('https://i.ibb.co/y8kt4wZ/fall-leaves.gif') repeat;
+    background-size: cover;
+}
+"""
 
-# -----------------------------
-# Gradio UI
-# -----------------------------
-with gr.Blocks(css="custom.css", js="script.js") as demo:
+with gr.Blocks(css=css) as demo:
+    gr.Markdown("<h1 style='text-align:center'>🍁 Fall Character Chat 🍁</h1>")
 
-    gr.HTML("""<h1 class="title">🍂 Fall Chat with Three Characters 🍁</h1>""")
+    character = gr.Radio(
+        ["Sarcastic", "Jarvis", "Wizard"],
+        value="Sarcastic",
+        label="Choose a Character"
+    )
 
-    with gr.Row():
-        gr.Button("😏 Sarcastic", elem_id="sarcastic").click(
-            set_character, inputs=[], outputs=[]
-        )
-        gr.Button("🤖 Jarvis", elem_id="jarvis").click(
-            set_character, inputs=[], outputs=[]
-        )
-        gr.Button("🧙 Wizard", elem_id="wizard").click(
-            set_character, inputs=[], outputs=[]
-        )
+    chatbox = gr.Chatbot(height=400)
+    msg = gr.Textbox(label="Your message")
+    clear = gr.Button("Clear Chat")
 
-    chatbot = gr.Chatbot(height=450, elem_id="chatbox")
-    msg = gr.Textbox(label="Send a message", placeholder="Type here...")
-
-    msg.submit(chat_fn, inputs=[msg, chatbot], outputs=[chatbot, msg])
+    msg.submit(chat_with_character, [character, msg, chatbox], [chatbox, chatbox])
+    clear.click(lambda: None, None, chatbox)
 
 demo.launch()
