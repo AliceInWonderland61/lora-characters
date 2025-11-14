@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>LoRA Character Chat</title>
+    <link rel="stylesheet" href="custom.css">
+</head>
+
+<body>
+
+    <div id="fall-background"></div>
+
+    <div class="container">
+
+        <h1>🍁 Fall LoRA Character Chat 🍁</h1>
+        <p>Current character: <span id="current-character">JARVIS</span></p>
+
+        <!-- Character Buttons -->
+        <div class="character-buttons">
+            <button onclick="setCharacter('jarvis')">Jarvis</button>
+            <button onclick="setCharacter('sarcastic')">Sarcastic</button>
+            <button onclick="setCharacter('wizard')">Wizard</button>
+        </div>
+
+        <!-- Chat Area -->
+        <div id="chat-box" class="chat-box"></div>
+
+        <!-- Input -->
+        <div class="input-row">
+            <input id="chat-input" type="text" placeholder="Type your message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+
+    </div>
+
+    <script src="script.js"></script>
+
+</body>
+</html>
