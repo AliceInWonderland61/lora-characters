@@ -1,6 +1,6 @@
 """
 Fall-Themed Character Chatbot with Text-to-Speech
-Beautiful Autumn Design - Simple & Fast with gTTS
+Beautiful Autumn Design - FIXED LAYOUT ORDER
 """
 
 import gradio as gr
@@ -40,7 +40,7 @@ CHARACTERS = {
         "adapter": "AlissenMoreno61/sarcastic-lora",
         "emoji": "🍃",
         "description": "Witty & Sharp-Tongued",
-        "personality": "Ryan Reynolds wit, cheeky but helpful",
+        "personality": "Wit, cheeky but helpful",
         "voice_speed": 1.1,
         "voice_lang": "en"
     }
@@ -63,10 +63,6 @@ def load_character_model(character):
         print(f"✅ {character} loaded!")
     return model_cache[character]
 
-# ============================================================================
-# TEXT TO SPEECH - Simple & Fast
-# ============================================================================
-
 def text_to_speech(text, character):
     """Convert character's response to speech"""
     try:
@@ -82,10 +78,6 @@ def text_to_speech(text, character):
     except Exception as e:
         print(f"TTS Error: {e}")
         return None
-
-# ============================================================================
-# CHAT FUNCTION
-# ============================================================================
 
 def chat_with_audio(message, history, character, enable_tts):
     if not message.strip():
@@ -132,11 +124,10 @@ def chat_with_audio(message, history, character, enable_tts):
     return history, audio_file
 
 # ============================================================================
-# GRADIO INTERFACE - BEAUTIFUL FALL THEME
+# GRADIO INTERFACE - CUTE FALL THEME
 # ============================================================================
 
 custom_css = """
-/* Main Container - Warm Fall Gradient */
 .gradio-container {
     background: linear-gradient(135deg, #8B9DC3 0%, #C49A6C 30%, #DFB77B 60%, #E67E22 100%) !important;
     font-family: 'Georgia', 'Times New Roman', serif;
@@ -144,7 +135,6 @@ custom_css = """
     overflow: hidden;
 }
 
-/* Cute corner decorations */
 .gradio-container::before {
     content: '🍂';
     position: fixed;
@@ -170,16 +160,9 @@ custom_css = """
     50% { transform: rotate(15deg); }
 }
 
-/* Falling Leaves Animation - Enhanced */
 @keyframes fall {
-    0% {
-        transform: translateY(-10vh) rotate(0deg);
-        opacity: 1;
-    }
-    100% {
-        transform: translateY(110vh) rotate(720deg);
-        opacity: 0.3;
-    }
+    0% { transform: translateY(-10vh) rotate(0deg); opacity: 1; }
+    100% { transform: translateY(110vh) rotate(720deg); opacity: 0.3; }
 }
 
 @keyframes sway {
@@ -197,10 +180,8 @@ custom_css = """
     filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.3));
 }
 
-/* Remove default styling */
 footer { display: none !important; }
 
-/* Character Selection Radio Buttons - Cuter! */
 #character-radio label {
     background: rgba(255, 248, 220, 0.95) !important;
     border: 3px solid #8B4513 !important;
@@ -229,7 +210,6 @@ footer { display: none !important; }
     transform: scale(1.05) !important;
 }
 
-/* Add cute emoji indicators to selected character */
 #character-radio input:checked + label::after {
     content: ' ✨';
     animation: sparkle 1s infinite;
@@ -240,7 +220,6 @@ footer { display: none !important; }
     50% { opacity: 0.5; }
 }
 
-/* Chatbot Styling - Cuter! */
 #chatbot {
     border-radius: 25px !important;
     border: 4px solid #8B4513 !important;
@@ -272,7 +251,6 @@ footer { display: none !important; }
     color: white !important;
 }
 
-/* Text Input - Cuter! */
 .input-box textarea {
     border: 3px solid #8B4513 !important;
     border-radius: 20px !important;
@@ -287,7 +265,6 @@ footer { display: none !important; }
     box-shadow: 0 0 15px rgba(255, 179, 71, 0.5), inset 0 2px 4px rgba(0, 0, 0, 0.1) !important;
 }
 
-/* Send Button - Cuter! */
 button.primary {
     background: linear-gradient(135deg, #FFB347, #FF8C42) !important;
     color: white !important;
@@ -306,11 +283,6 @@ button.primary:hover {
     box-shadow: 0 6px 20px rgba(255, 127, 0, 0.5) !important;
 }
 
-button.primary:active {
-    transform: translateY(-1px) scale(1.02) !important;
-}
-
-/* Secondary Button - Cuter! */
 button.secondary {
     background: rgba(255, 248, 220, 0.9) !important;
     color: #8B4513 !important;
@@ -325,20 +297,12 @@ button.secondary:hover {
     box-shadow: 0 4px 12px rgba(205, 133, 63, 0.3) !important;
 }
 
-/* Checkbox - Cuter! */
-.checkboxgroup label, .checkbox label {
-    color: #5D4037 !important;
-    font-weight: 600 !important;
-    font-size: 16px !important;
-}
-
 input[type="checkbox"] {
     accent-color: #FFB347 !important;
     width: 20px !important;
     height: 20px !important;
 }
 
-/* Info Card - Cuter with shadow and glow! */
 .info-card {
     background: linear-gradient(135deg, rgba(255, 250, 245, 0.95), rgba(255, 248, 220, 0.95)) !important;
     border: 3px solid #CD853F !important;
@@ -354,21 +318,6 @@ input[type="checkbox"] {
     box-shadow: 0 8px 25px rgba(139, 69, 19, 0.35) !important;
 }
 
-/* Audio Player - Cuter! */
-audio {
-    border: 3px solid #CD853F !important;
-    border-radius: 20px !important;
-    background: linear-gradient(135deg, rgba(255, 250, 245, 0.95), rgba(255, 248, 220, 0.95)) !important;
-    box-shadow: 0 4px 15px rgba(205, 133, 63, 0.3) !important;
-}
-
-/* Headers - Cuter with more playful shadows! */
-h1, h2, h3 {
-    color: #5D4037 !important;
-    text-shadow: 2px 2px 8px rgba(255, 179, 71, 0.3), 1px 1px 2px rgba(0, 0, 0, 0.2) !important;
-}
-
-/* Header boxes - Cuter! */
 .header-box {
     background: linear-gradient(135deg, rgba(255, 235, 205, 0.9), rgba(255, 222, 173, 0.9)) !important;
     border: 4px solid #CD853F !important;
@@ -376,37 +325,15 @@ h1, h2, h3 {
     box-shadow: 0 10px 30px rgba(139, 69, 19, 0.3), inset 0 2px 5px rgba(255, 255, 255, 0.5) !important;
 }
 
-/* Add cute pulsing effect to important elements */
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-}
-
-/* Scrollbar - Cute autumn theme */
-::-webkit-scrollbar {
-    width: 12px;
-}
-
-::-webkit-scrollbar-track {
-    background: rgba(255, 248, 220, 0.5);
-    border-radius: 10px;
-}
-
-::-webkit-scrollbar-thumb {
-    background: linear-gradient(135deg, #CD853F, #8B4513);
-    border-radius: 10px;
-    border: 2px solid rgba(255, 248, 220, 0.5);
-}
-
-::-webkit-scrollbar-thumb:hover {
-    background: linear-gradient(135deg, #FFB347, #CD853F);
+h1, h2, h3 {
+    color: #5D4037 !important;
+    text-shadow: 2px 2px 8px rgba(255, 179, 71, 0.3), 1px 1px 2px rgba(0, 0, 0, 0.2) !important;
 }
 """
 
 falling_leaves_js = """
 <script>
 function createFallingLeaves() {
-    // More variety of autumn emojis for cuteness!
     const leaves = ['🍂', '🍁', '🍃', '🌰', '🎃', '🦔', '🦊', '🐿️'];
     const container = document.body;
     
@@ -415,34 +342,20 @@ function createFallingLeaves() {
         leaf.className = 'leaf';
         const emoji = leaves[Math.floor(Math.random() * leaves.length)];
         leaf.innerHTML = emoji;
-        
-        // Random position
         leaf.style.left = Math.random() * 100 + 'vw';
-        
-        // Varied speeds for more natural look
-        const duration = Math.random() * 15 + 10; // 10-25 seconds
+        const duration = Math.random() * 15 + 10;
         leaf.style.animationDuration = duration + 's';
         leaf.style.animationDelay = Math.random() * 5 + 's';
-        
-        // Varied sizes for depth
-        const size = 1.5 + Math.random() * 1.5; // 1.5rem - 3rem
+        const size = 1.5 + Math.random() * 1.5;
         leaf.style.fontSize = size + 'rem';
-        
-        // Some opacity variation
         leaf.style.opacity = 0.7 + Math.random() * 0.3;
-        
         container.appendChild(leaf);
-        
-        // Remove after animation
         setTimeout(() => leaf.remove(), (duration + 5) * 1000);
     }
     
-    // Create more initial leaves for fuller effect
     for(let i = 0; i < 25; i++) {
         setTimeout(createLeaf, i * 200);
     }
-    
-    // Keep creating new leaves
     setInterval(createLeaf, 1500);
 }
 
@@ -491,12 +404,12 @@ with gr.Blocks(css=custom_css, theme=gr.themes.Soft(), head=falling_leaves_js) a
                 f"""
                 <div class='info-card'>
                     <h3 style='margin-top: 0; color: #5D4037;'>🍂 JARVIS</h3>
-                    <p style='color: #6D4C41; margin: 8px 0;'><strong>Witty & Sharp-Tongued</strong></p>
+                    <p style='color: #6D4C41; margin: 8px 0;'><strong>Sophisticated AI Assistant</strong></p>
                     <p style='color: #8B4513; font-size: 15px; margin: 8px 0;'>
-                        Wit, cheeky but helpful
+                        Professional, articulate, British butler-like
                     </p>
                     <p style='color: #A0522D; font-size: 14px; margin: 8px 0;'>
-                        🎤 Voice: FastPitch (Quick & Energetic)
+                        🎤 Voice: Professional & Measured
                     </p>
                 </div>
                 """
@@ -504,21 +417,20 @@ with gr.Blocks(css=custom_css, theme=gr.themes.Soft(), head=falling_leaves_js) a
             
             clear_btn = gr.Button("🔄 New Conversation", variant="secondary", size="lg")
         
-        # Right Main Area
+        # Right Main Area - CORRECT ORDER
         with gr.Column(scale=3):
-            chatbot = gr.Chatbot(
-                label="💬 Conversation",
-                height=450,
-                elem_id="chatbot",
-                bubble_full_width=False
-            )
+            # 1. HOW TO USE BOX - FIRST
+            gr.HTML("""
+                <div class='header-box' style='text-align: center; padding: 25px; margin-bottom: 20px;'>
+                    <h3 style='color: #5D4037; margin-bottom: 12px;'>🎯 How to Use Your Autumn AI</h3>
+                    <p style='color: #6D4C41; font-size: 1.05em; line-height: 1.8;'>
+                        🍂 Pick your character • 🍁 Toggle voice • 🍃 Type below • 🎃 Chat!
+                    </p>
+                </div>
+            """)
             
-            audio_output = gr.Audio(
-                label="🔊 Character Voice (Unique per character!)",
-                type="filepath",
-                autoplay=True
-            )
-            
+            # 2. MESSAGE INPUT - SECOND
+            gr.HTML("<h3 style='color: #5D4037; margin: 15px 0 10px 0; text-align: center;'>💬 Type Your Message</h3>")
             with gr.Row():
                 msg = gr.Textbox(
                     label="",
@@ -528,28 +440,38 @@ with gr.Blocks(css=custom_css, theme=gr.themes.Soft(), head=falling_leaves_js) a
                     elem_classes=["input-box"]
                 )
                 submit_btn = gr.Button("Send", scale=1, variant="primary")
+            
+            # 3. AUDIO - THIRD
+            gr.HTML("<h3 style='color: #5D4037; margin: 20px 0 10px 0; text-align: center;'>🔊 Character Voice</h3>")
+            audio_output = gr.Audio(
+                label="",
+                type="filepath",
+                autoplay=True,
+                show_label=False
+            )
+            
+            # 4. CONVERSATION - LAST
+            gr.HTML("<h3 style='color: #5D4037; margin: 20px 0 10px 0; text-align: center;'>💭 Conversation History</h3>")
+            chatbot = gr.Chatbot(
+                label="",
+                height=350,
+                elem_id="chatbot",
+                bubble_full_width=False,
+                show_label=False
+            )
     
     # Footer
     gr.HTML("""
-        <div class='header-box' style='text-align: center; padding: 30px; margin-top: 30px;'>
-            <h3 style='color: #5D4037; margin-bottom: 15px;'>🎯 How to Use Your Autumn AI</h3>
-            <p style='color: #6D4C41; font-size: 1.1em; line-height: 2;'>
-                🍂 <strong>Step 1:</strong> Pick your favorite character<br>
-                🍁 <strong>Step 2:</strong> Toggle voice on/off<br>
-                🍃 <strong>Step 3:</strong> Start chatting!<br>
-                🎃 <strong>Step 4:</strong> Enjoy the cozy autumn vibes
+        <div class='header-box' style='text-align: center; padding: 20px; margin-top: 25px;'>
+            <p style='color: #8B4513; font-size: 0.95em;'>
+                🦊 LoRA Fine-tuning • 🐿️ Gradio • 🦔 gTTS
             </p>
-            <p style='color: #8B4513; margin-top: 20px; font-size: 1em;'>
-                🦊 LoRA Fine-tuning • 🐿️ Gradio Interface • 🦔 gTTS Voices
-            </p>
-           
-            <p style='color: #8B4513; margin-top: 8px; font-size: 0.85em;'>
-                🌰 Fall 2024 Edition 🌰
+            <p style='color: #A0522D; margin-top: 8px; font-size: 0.9em;'>
+                Made with 🧡 by <strong>AlissenMoreno61</strong> • 🌰 Fall 2024
             </p>
         </div>
     """)
     
-    # Update character info
     def update_character_info(character):
         char_data = CHARACTERS[character]
         voice_desc = {
@@ -576,7 +498,6 @@ with gr.Blocks(css=custom_css, theme=gr.themes.Soft(), head=falling_leaves_js) a
         outputs=[character_info]
     )
     
-    # Chat interactions
     msg.submit(
         fn=chat_with_audio,
         inputs=[msg, chatbot, character_selector, enable_tts],
