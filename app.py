@@ -25,7 +25,6 @@ def load_adapter(name):
 
 current_adapter = load_adapter("Jarvis")
 
-
 def chat_fn(history, message, persona):
     global current_adapter
     current_adapter = load_adapter(persona)
@@ -39,20 +38,21 @@ def chat_fn(history, message, persona):
     )
     reply = tokenizer.decode(outputs[0], skip_special_tokens=True)
 
-    history.append(("You", message))
-    history.append((persona, reply))
+    history.append({"role": "user", "content": message})
+    history.append({"role": persona, "content": reply})
     return history, ""
 
 
-# ===============================
-#   FRONT-END + LEAVES + FONTS
-# ===============================
+# ==============================
+#  FRONTEND + LEAVES + FONTS
+# ==============================
 HEADER_HTML = """
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@500&family=Poppins:wght@400;600&family=Cormorant+Garamond:wght@500;700&display=swap" rel="stylesheet">
 
 <div id="falling-leaves"></div>
 
 <script>
+// FALLING LEAVES
 const leafContainer = document.getElementById("falling-leaves");
 const leafImgs = [
     "leaves/leaf1.png",
@@ -67,32 +67,33 @@ function spawnLeaf() {
     leaf.classList.add("leaf");
     leaf.style.left = Math.random() * 100 + "vw";
     leaf.style.animationDuration = (6 + Math.random() * 6) + "s";
-    leaf.style.width = 25 + Math.random() * 20 + "px";
+    leaf.style.width = (20 + Math.random() * 25) + "px";
     leafContainer.appendChild(leaf);
 
     setTimeout(() => leaf.remove(), 12000);
 }
 setInterval(spawnLeaf, 450);
 
-function updatePersona(e) {
+// PERSONA FONT SWITCH (no Gradio JS hook)
+document.addEventListener("click", () => {
+    const selected = document.querySelector("input[type=radio][name=radio]:checked");
+    if (!selected) return;
+    const persona = selected.value;
+
     const box = document.querySelector("textarea");
     if (!box) return;
 
     box.classList.remove("jarvis-text","sarcastic-text","wizard-text");
 
-    if (e === "Jarvis") box.classList.add("jarvis-text");
-    if (e === "Sarcastic") box.classList.add("sarcastic-text");
-    if (e === "Wizard") box.classList.add("wizard-text");
-}
+    if (persona === "Jarvis") box.classList.add("jarvis-text");
+    if (persona === "Sarcastic") box.classList.add("sarcastic-text");
+    if (persona === "Wizard") box.classList.add("wizard-text");
+});
 </script>
 """
 
-# ===============================
-#        GRADIO UI
-# ===============================
-
 with gr.Blocks(css="custom.css") as ui:
-    
+
     gr.HTML(HEADER_HTML)
 
     persona = gr.Radio(
@@ -101,7 +102,7 @@ with gr.Blocks(css="custom.css") as ui:
         value="Jarvis"
     )
 
-    chatbot = gr.Chatbot(height=350)
+    chatbot = gr.Chatbot(type="messages", height=350)
     msg = gr.Textbox(label="Your message", placeholder="Type here… 🍁")
     send_btn = gr.Button("Send")
 
@@ -110,8 +111,5 @@ with gr.Blocks(css="custom.css") as ui:
         inputs=[chatbot, msg, persona],
         outputs=[chatbot, msg]
     )
-
-    # JS persona hook (new Gradio API)
-    persona.change(None, None, None, _js="updatePersona")
 
 ui.launch()
