@@ -6,5 +6,16 @@ gradio>=4.0.0
 huggingface-hub>=0.19.0
 sentencepiece>=0.1.99
 protobuf>=3.20.0
+
+# Text-to-Speech (Character speaks)
 gTTS>=2.3.0
 pydub>=0.25.1
+
+# Speech-to-Text (User speaks) - BONUS
+openai-whisper>=20231117
+# Alternative lighter option:
+# transformers[torch] - includes Whisper models
+
+# Audio processing
+soundfile>=0.12.1
+librosa>=0.10.0
