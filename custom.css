@@ -1,112 +1,50 @@
-/* ------------------------------
-   FALL PASTEL THEME
---------------------------------*/
-
-body, .gradio-container {
-    background-color: #FFF2EB !important;
-    font-family: "Poppins", sans-serif;
+/* Force light theme */
+:root {
+    --background: #FFF2EB !important;
+    --block-background-fill: #FFE8CD !important;
 }
 
-/* ------------------------------
-   CHATBOT AREA
---------------------------------*/
+body {
+    background: #FFF2EB !important;
+}
+
+/* Chatbot background */
 .gr-chatbot {
-    background: #FFDCDC !important;  /* light pink */
-    border-radius: 12px;
-    padding: 12px;
-    border: 2px solid #FFE8CD;
-}
-
-/* Chat messages bubbles */
-.gr-chatbot .message {
-    padding: 10px 12px;
-    margin: 8px 0;
+    background: #FFE8CD !important;
     border-radius: 10px;
 }
 
-/* User bubble */
-.gr-chatbot .message.user {
-    background: #FFE8CD !important;     /* soft peach */
-    color: #5A4637 !important;          /* warm brown */
-    border: 1px solid #FFD6BA;
-}
-
-/* Bot bubble */
-.gr-chatbot .message.bot {
-    background: #FFDCDC !important;     /* pastel blush */
-    color: #4A3A35 !important;
-    border: 1px solid #FFD6BA;
-}
-
-/* ------------------------------
-   TEXTBOX
---------------------------------*/
-textarea {
-    background: #FFF2EB !important;
-    border: 2px solid #FFD6BA !important;
-    border-radius: 10px !important;
-    color: #4A3A35 !important;
-    font-size: 16px !important;
-}
-
-/* Placeholder text */
-textarea::placeholder {
-    color: #C8AFA0 !important;
-}
-
-/* ------------------------------
-   BUTTONS
---------------------------------*/
-button {
-    background: #FFD6BA !important;
-    color: #4A3A35 !important;
-    border-radius: 10px !important;
-    border: 2px solid #FFC7A6 !important;
-    font-weight: bold !important;
-}
-
-button:hover {
-    background: #FFC7A6 !important;
-}
-
-/* ------------------------------
-   RADIO BUTTONS (persona selector)
---------------------------------*/
-.gr-radio label {
-    background: #FFE8CD !important;
-    border-radius: 8px !important;
-    padding: 6px 10px !important;
-    border: 1px solid #FFD6BA !important;
-}
-
-.gr-radio input:checked + label {
-    background: #FFDCDC !important;
-    border: 2px solid #FFB8B8 !important;
-}
-
-/* ------------------------------
-   PERSONA FONT CLASSES
---------------------------------*/
+/* Persona fonts */
 .jarvis-text {
     font-family: "Playfair Display", serif !important;
-    font-size: 17px;
 }
 
 .sarcastic-text {
     font-family: "Poppins", sans-serif !important;
-    font-size: 17px;
 }
 
 .wizard-text {
     font-family: "Cormorant Garamond", serif !important;
-    font-style: italic;
-    font-size: 19px;
 }
 
-/* ------------------------------
-   FALL LEAVES (to layer ABOVE UI)
---------------------------------*/
-#falling-leaves img {
+/* Falling leaves */
+#falling-leaves {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100vw;
+    height: 100vh;
     pointer-events: none;
-    z-index: 9999;
+    overflow: hidden;
+    z-index: 0;
+}
+
+.leaf {
+    position: absolute;
+    opacity: 0.8;
+    animation: fall linear infinite;
+}
+
+@keyframes fall {
+    0% { transform: translateY(-10vh) rotate(0deg); }
+    100% { transform: translateY(110vh) rotate(360deg); }
 }
