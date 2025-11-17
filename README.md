@@ -4,18 +4,18 @@ emoji: 🍂
 colorFrom: yellow
 colorTo: red
 sdk: gradio
-sdk_version: "4.44.0"
+sdk_version: 5.49.1
 app_file: app.py
 pinned: false
 license: mit
 tags:
-  - chatbot
-  - lora
-  - peft
-  - character-ai
+- chatbot
+- lora
+- peft
+- character-ai
 models:
-  - Qwen/Qwen2-0.5B-Instruct
-python_version: "3.10"
+- Qwen/Qwen2-0.5B-Instruct
+python_version: '3.10'
 ---
 
 # 🍂 Autumn AI Characters 🍁
