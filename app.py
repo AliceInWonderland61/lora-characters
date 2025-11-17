@@ -53,13 +53,13 @@ HEADER_HTML = """
 
 <script>
 // FALLING LEAVES
-const leafContainer = document.getElementById("falling-leaves");
 const leafImgs = [
-    "leaves/leaf1.png",
-    "leaves/leaf2.png",
-    "leaves/leaf3.png",
-    "leaves/leaf4.png"
+    "/file/leaves/leaf1.png",
+    "/file/leaves/leaf2.png",
+    "/file/leaves/leaf3.png",
+    "/file/leaves/leaf4.png"
 ];
+
 
 function spawnLeaf() {
     const leaf = document.createElement("img");
