@@ -260,6 +260,16 @@ footer { display: none !important; }
     border: 2px solid #DEB887 !important;
     border-radius: 20px 20px 20px 5px !important;
     box-shadow: 0 4px 12px rgba(222, 184, 135, 0.3) !important;
+    color: #2C1810 !important;
+    font-weight: 500 !important;
+}
+
+.message.bot p {
+    color: #2C1810 !important;
+}
+
+.message.user p {
+    color: white !important;
 }
 
 /* Text Input - Cuter! */
@@ -483,7 +493,7 @@ with gr.Blocks(css=custom_css, theme=gr.themes.Soft(), head=falling_leaves_js) a
                     <h3 style='margin-top: 0; color: #5D4037;'>🍂 JARVIS</h3>
                     <p style='color: #6D4C41; margin: 8px 0;'><strong>Witty & Sharp-Tongued</strong></p>
                     <p style='color: #8B4513; font-size: 15px; margin: 8px 0;'>
-                        Ryan Reynolds wit, cheeky but helpful
+                        Wit, cheeky but helpful
                     </p>
                     <p style='color: #A0522D; font-size: 14px; margin: 8px 0;'>
                         🎤 Voice: FastPitch (Quick & Energetic)
@@ -517,7 +527,7 @@ with gr.Blocks(css=custom_css, theme=gr.themes.Soft(), head=falling_leaves_js) a
                     lines=2,
                     elem_classes=["input-box"]
                 )
-                submit_btn = gr.Button("Send 🚀", scale=1, variant="primary")
+                submit_btn = gr.Button("Send", scale=1, variant="primary")
     
     # Footer
     gr.HTML("""
@@ -532,9 +542,7 @@ with gr.Blocks(css=custom_css, theme=gr.themes.Soft(), head=falling_leaves_js) a
             <p style='color: #8B4513; margin-top: 20px; font-size: 1em;'>
                 🦊 LoRA Fine-tuning • 🐿️ Gradio Interface • 🦔 gTTS Voices
             </p>
-            <p style='color: #A0522D; margin-top: 12px; font-size: 0.95em;'>
-                Made with 🧡 by <strong>AlissenMoreno61</strong>
-            </p>
+           
             <p style='color: #8B4513; margin-top: 8px; font-size: 0.85em;'>
                 🌰 Fall 2024 Edition 🌰
             </p>
