@@ -1,13 +1,15 @@
 """
-Fall-Themed Character Chatbot
-Hugging Face Space Application
+Fall-Themed Character Chatbot with Text-to-Speech
+BONUS VERSION with Audio Output
 """
 
 import gradio as gr
 import torch
 from transformers import AutoModelForCausalLM, AutoTokenizer
 from peft import PeftModel
-import random
+from gtts import gTTS
+import os
+import tempfile
 
 # ============================================================================
 # MODEL LOADING
@@ -15,69 +17,82 @@ import random
 
 MODEL_NAME = "Qwen/Qwen2-0.5B-Instruct"
 
-# Load tokenizer once
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, trust_remote_code=True)
 tokenizer.pad_token = tokenizer.eos_token
 
-# Character configurations
 CHARACTERS = {
     "JARVIS": {
-        "adapter": "AlissenMoreno61/jarvis-lora",  # Replace with your HF repo
+        "adapter": "your-username/jarvis-lora",
         "emoji": "🍂",
         "description": "Sophisticated AI Assistant",
-        "color": "#4B8BBE"
+        "color": "#4B8BBE",
+        "voice_speed": 0.9,  # Slower, more professional
+        "voice_lang": "en"
     },
     "Wizard": {
-        "adapter": "AlissenMoreno61/wizard-lora",  # Replace with your HF repo
+        "adapter": "your-username/wizard-lora",
         "emoji": "🍁",
         "description": "Mystical Sage of Autumn",
-        "color": "#9B59B6"
+        "color": "#9B59B6",
+        "voice_speed": 0.8,  # Slow and mysterious
+        "voice_lang": "en"
     },
     "Sarcastic": {
-        "adapter": "AlissenMoreno61/sarcastic-lora",  # Replace with your HF repo
+        "adapter": "your-username/sarcastic-lora",
         "emoji": "🍃",
         "description": "Witty & Sharp-Tongued",
-        "color": "#E67E22"
+        "color": "#E67E22",
+        "voice_speed": 1.1,  # Faster, more energetic
+        "voice_lang": "en"
     }
 }
 
-# Cache for loaded models
 model_cache = {}
 
 def load_character_model(character):
-    """Load or retrieve cached character model"""
     if character not in model_cache:
         print(f"Loading {character}...")
-        
-        # Load base model
         base_model = AutoModelForCausalLM.from_pretrained(
             MODEL_NAME,
             torch_dtype=torch.float16,
             device_map="auto",
             trust_remote_code=True
         )
-        
-        # Load LoRA adapter
-        model = PeftModel.from_pretrained(
-            base_model,
-            CHARACTERS[character]["adapter"]
-        )
+        model = PeftModel.from_pretrained(base_model, CHARACTERS[character]["adapter"])
         model.eval()
-        
         model_cache[character] = model
         print(f"✅ {character} loaded!")
-    
     return model_cache[character]
 
 # ============================================================================
-# CHAT FUNCTION
+# TEXT TO SPEECH
 # ============================================================================
 
-def chat(message, history, character):
-    """Generate response from selected character"""
+def text_to_speech(text, character):
+    """Convert text to speech with character-specific settings"""
+    try:
+        char_config = CHARACTERS[character]
+        
+        # Create speech
+        tts = gTTS(text=text, lang=char_config["voice_lang"], slow=(char_config["voice_speed"] < 1.0))
+        
+        # Save to temporary file
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
+            tts.save(fp.name)
+            return fp.name
+    except Exception as e:
+        print(f"TTS Error: {e}")
+        return None
+
+# ============================================================================
+# CHAT FUNCTION WITH TTS
+# ============================================================================
+
+def chat_with_audio(message, history, character, enable_tts):
+    """Generate response with optional audio"""
     
     if not message.strip():
-        return history
+        return history, None
     
     # Load character model
     model = load_character_model(character)
@@ -117,20 +132,21 @@ def chat(message, history, character):
     
     # Update history
     history.append((message, response))
-    return history
+    
+    # Generate audio if enabled
+    audio_file = None
+    if enable_tts:
+        audio_file = text_to_speech(response, character)
+    
+    return history, audio_file
 
 # ============================================================================
 # GRADIO INTERFACE
 # ============================================================================
 
-# Custom CSS for fall theme
 custom_css = """
 #main-container {
     background: linear-gradient(135deg, #FFF8DC 0%, #FFE4B5 50%, #FFDAB9 100%);
-}
-
-.gradio-container {
-    font-family: 'Arial', sans-serif;
 }
 
 #character-selector button {
@@ -145,16 +161,9 @@ custom_css = """
     box-shadow: 0 5px 15px rgba(0,0,0,0.3);
 }
 
-.message {
-    border-radius: 15px;
-    padding: 10px 15px;
-    margin: 5px;
-}
-
 #chatbot {
     border-radius: 20px;
     border: 3px solid #CD853F;
-    overflow: hidden;
 }
 
 footer {
@@ -162,15 +171,14 @@ footer {
 }
 """
 
-# Build interface
 with gr.Blocks(css=custom_css, theme=gr.themes.Soft()) as demo:
     
     gr.Markdown(
         """
-        # 🍂 Autumn AI Characters 🍁
-        ### Choose your guide through the fall season
+        # 🍂 Autumn AI Characters with Voice 🍁
+        ### Choose your guide and hear them speak!
         
-        Experience three distinct AI personalities, each fine-tuned with LoRA adapters!
+        Experience three distinct AI personalities with optional text-to-speech!
         """
     )
     
@@ -181,6 +189,12 @@ with gr.Blocks(css=custom_css, theme=gr.themes.Soft()) as demo:
                 value="JARVIS",
                 label="🎭 Select Character",
                 elem_id="character-selector"
+            )
+            
+            enable_tts = gr.Checkbox(
+                label="🔊 Enable Text-to-Speech",
+                value=True,
+                info="Hear your character speak!"
             )
             
             gr.Markdown("### Character Info")
@@ -197,9 +211,17 @@ with gr.Blocks(css=custom_css, theme=gr.themes.Soft()) as demo:
         with gr.Column(scale=3):
             chatbot = gr.Chatbot(
                 label="Chat",
-                height=500,
+                height=400,
                 elem_id="chatbot",
                 bubble_full_width=False
+            )
+            
+            # Audio player
+            audio_output = gr.Audio(
+                label="🔊 Character Voice",
+                type="filepath",
+                autoplay=True,
+                visible=True
             )
             
             with gr.Row():
@@ -214,19 +236,21 @@ with gr.Blocks(css=custom_css, theme=gr.themes.Soft()) as demo:
     gr.Markdown(
         """
         ---
-        🍂 **Powered by LoRA Fine-tuning** 🍁 Built with Hugging Face Transformers 🍃
+        🍂 **Powered by LoRA Fine-tuning** 🍁 **Voice by gTTS** 🍃 **Built with Gradio**
         
-        Each character is a specialized adapter trained on unique personality data!
+        Each character has a unique voice profile matching their personality!
         """
     )
     
-    # Update character info when selection changes
+    # Update character info
     def update_character_info(character):
         char_data = CHARACTERS[character]
         return f"""
         **{char_data['emoji']} {character}**
         
         {char_data['description']}
+        
+        Voice Speed: {char_data['voice_speed']}x
         """
     
     character_selector.change(
@@ -237,28 +261,27 @@ with gr.Blocks(css=custom_css, theme=gr.themes.Soft()) as demo:
     
     # Chat interactions
     msg.submit(
-        fn=chat,
-        inputs=[msg, chatbot, character_selector],
-        outputs=[chatbot]
+        fn=chat_with_audio,
+        inputs=[msg, chatbot, character_selector, enable_tts],
+        outputs=[chatbot, audio_output]
     ).then(
         lambda: "",
         outputs=[msg]
     )
     
     submit_btn.click(
-        fn=chat,
-        inputs=[msg, chatbot, character_selector],
-        outputs=[chatbot]
+        fn=chat_with_audio,
+        inputs=[msg, chatbot, character_selector, enable_tts],
+        outputs=[chatbot, audio_output]
     ).then(
         lambda: "",
         outputs=[msg]
     )
     
-    clear_btn.click(lambda: [], outputs=[chatbot])
-
-# ============================================================================
-# LAUNCH
-# ============================================================================
+    clear_btn.click(
+        lambda: ([], None),
+        outputs=[chatbot, audio_output]
+    )
 
 if __name__ == "__main__":
     demo.launch(
