@@ -1,5 +1,5 @@
 """
-Autumn AI Character Chatbot (Perfectly Aligned - Gradio 3 Compatible)
+Autumn AI Character Chatbot (Two-Column Layout, Gradio 3 Compatible)
 """
 
 import gradio as gr
@@ -71,7 +71,6 @@ def chat_with_audio(message, history, character, enable_tts):
 
     model = load_character_model(character)
 
-    # Build conversation history
     messages = []
     for h in history:
         messages.append({"role": "user", "content": h[0]})
@@ -100,7 +99,7 @@ def chat_with_audio(message, history, character, enable_tts):
 
 
 # -----------------------------
-# CSS
+# CSS (clean, centered)
 # -----------------------------
 
 custom_css = """
@@ -111,9 +110,9 @@ custom_css = """
 
 .main-box, .content-box {
     max-width: 900px !important;
+    padding: 25px !important;
     margin-left: auto !important;
     margin-right: auto !important;
-    padding: 25px !important;
     border-radius: 20px !important;
     background: rgba(255, 248, 220, 0.94) !important;
     border: 3px solid #CD853F !important;
@@ -127,8 +126,9 @@ footer { display: none !important; }
 }
 """
 
+
 # -----------------------------
-# UI LAYOUT (Perfectly Aligned)
+# UI LAYOUT (TWO COLUMN)
 # -----------------------------
 
 with gr.Blocks(css=custom_css, theme=gr.themes.Soft()) as demo:
@@ -145,8 +145,8 @@ with gr.Blocks(css=custom_css, theme=gr.themes.Soft()) as demo:
         gr.HTML("""
             <h3 style='text-align:center;'>🎯 How to Use Your Autumn AI</h3>
             <p style='text-align:center;'>
-                🍂 Select a character<br>
-                🍁 Toggle voice if you want<br>
+                🍂 Select a character below<br>
+                🍁 Toggle voice if desired<br>
                 🍃 Type your message<br>
                 🎃 Enjoy the conversation!
             </p>
@@ -162,36 +162,35 @@ with gr.Blocks(css=custom_css, theme=gr.themes.Soft()) as demo:
             elem_id="character-radio"
         )
 
-    # CHARACTER INFO ---------------------------------------------
-    with gr.Group(elem_classes="content-box"):
-        character_info = gr.HTML("")
+    # MAIN TWO COLUMN LAYOUT -------------------------------------
+    with gr.Row():
 
-    # TTS + CLEAR ------------------------------------------------
-    with gr.Group(elem_classes="content-box"):
-        with gr.Row():
-            enable_tts = gr.Checkbox(label="🔊 Enable Voice", value=True)
-            clear_btn = gr.Button("🔄 New Conversation")
+        # LEFT SIDE — Chat
+        with gr.Column(scale=3):
 
-    # MESSAGE INPUT ---------------------------------------------
-    with gr.Group(elem_classes="content-box"):
-        gr.HTML("<h3>💬 Type Your Message</h3>")
-        with gr.Row():
-            msg = gr.Textbox(
-                placeholder="Type your message here... 🍂",
-                lines=2,
-                scale=5
-            )
-            submit_btn = gr.Button("Send", variant="primary", scale=1)
+            with gr.Group(elem_classes="content-box"):
+                gr.HTML("<h3>💭 Conversation</h3>")
+                chatbot = gr.Chatbot(height=360)
 
-    # CHAT HISTORY ----------------------------------------------
-    with gr.Group(elem_classes="content-box"):
-        gr.HTML("<h3>💭 Conversation History</h3>")
-        chatbot = gr.Chatbot(height=360)
+            with gr.Group(elem_classes="content-box"):
+                gr.HTML("<h3>💬 Type Your Message</h3>")
+                with gr.Row():
+                    msg = gr.Textbox(lines=2, placeholder="Type here... 🍂", scale=5)
+                    submit_btn = gr.Button("Send", variant="primary", scale=1)
 
-    # AUDIO OUTPUT ----------------------------------------------
-    with gr.Group(elem_classes="content-box"):
-        gr.HTML("<h3>🔊 Character Voice</h3>")
-        audio_output = gr.Audio(type="filepath", autoplay=True)
+        # RIGHT SIDE — Character + Voice
+        with gr.Column(scale=2):
+
+            with gr.Group(elem_classes="content-box"):
+                character_info = gr.HTML("")
+
+            with gr.Group(elem_classes="content-box"):
+                enable_tts = gr.Checkbox(label="🔊 Enable Voice", value=True)
+                clear_btn = gr.Button("🔄 New Conversation")
+
+            with gr.Group(elem_classes="content-box"):
+                gr.HTML("<h3>🔊 Character Voice</h3>")
+                audio_output = gr.Audio(type="filepath", autoplay=True)
 
     # FOOTER -----------------------------------------------------
     with gr.Group(elem_classes="main-box"):
@@ -231,3 +230,4 @@ with gr.Blocks(css=custom_css, theme=gr.themes.Soft()) as demo:
 # -----------------------------
 if __name__ == "__main__":
     demo.launch(share=False, server_name="0.0.0.0", server_port=7860)
+
