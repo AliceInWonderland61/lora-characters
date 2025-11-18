@@ -203,7 +203,7 @@ with gr.Blocks(css=custom_css) as demo:
     with gr.Column(elem_classes="main-card"):
 
         # Character buttons
-        gr.HTML("<h2 style='text-align:center; font-weight:800; font-size:28px;'>Choose Your Character</h2>")
+        gr.HTML("<h2 style='text-align:center; font-weight:800; font-size:28px; color:#4A4A4A;'>Choose Your Character</h2>")
         char_btns = gr.Radio(
             list(CHARACTERS.keys()),
             value="JARVIS",
