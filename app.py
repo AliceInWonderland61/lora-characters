@@ -198,12 +198,11 @@ input, textarea {{
 # ----------------------------
 with gr.Blocks(css=custom_css) as demo:
 
-    gr.HTML("<h1 style='text-align:center;'>🌼 Pastel Daisy Assistant 🌼</h1>")
+    gr.HTML("<h1 style='text-align:center;'>🌼 AI Character Chat 🌼</h1>")
 
     with gr.Column(elem_classes="main-card"):
 
         # Character buttons
-        gr.HTML("<h2 style='text-align:center; font-weight:800; font-size:28px; color:#4A4A4A;'>Choose Your Character</h2>")
         char_btns = gr.Radio(
             list(CHARACTERS.keys()),
             value="JARVIS",
