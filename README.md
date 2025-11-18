@@ -173,4 +173,3 @@ MIT License - Feel free to use and modify!
 - 🔊 Google Text-to-Speech
 - 🌼 Pastel Design Philosophy
 
-**Created by**: Alissen Moreno
