@@ -100,99 +100,142 @@ def chat_fn(message, history, character, enable_tts):
 
 custom_css = """
 /* ---------------------------
-   LIGHT AUTUMN AIR THEME 🍂🍁
-   Soft, cozy, airy fall colors
+   LIGHT DAISY AESTHETIC 🌼✨
+   Soft beige + thin daisy wallpaper
    --------------------------- */
+
 .gradio-container {
-    background: linear-gradient(135deg, #8A9BB3 0%, #F7E9D5 40%, #FAF4EC 100%) !important;
+    background: #E8D9B9 !important; /* warm beige */
     font-family: 'Georgia', serif;
+    position: relative;
+    overflow-x: hidden;
 }
 
-/* Warm card containers */
+/* Daisy wallpaper layer */
+.gradio-container::before {
+    content: "";
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 140%;
+    height: 140%;
+    pointer-events: none;
+
+    background-image:
+        radial-gradient(circle at 20% 20%, white 0 35%, transparent 36%),
+        radial-gradient(circle at 80% 30%, white 0 40%, transparent 41%),
+        radial-gradient(circle at 40% 80%, white 0 33%, transparent 34%),
+        radial-gradient(circle at 70% 70%, white 0 38%, transparent 39%);
+
+    /* Daisy centers */
+    mask-image:
+        radial-gradient(circle at 20% 20%, transparent 0 30%, black 31%),
+        radial-gradient(circle at 80% 30%, transparent 0 35%, black 36%),
+        radial-gradient(circle at 40% 80%, transparent 0 28%, black 29%),
+        radial-gradient(circle at 70% 70%, transparent 0 33%, black 34%);
+
+    opacity: 0.22;
+    z-index: 0;
+
+    /* soft movement feel */
+    animation: drift 22s linear infinite;
+}
+
+@keyframes drift {
+    0% { transform: translate(0px, 0px) scale(1.2); }
+    50% { transform: translate(-35px, 20px) scale(1.25); }
+    100% { transform: translate(0px, 0px) scale(1.2); }
+}
+
+/* Main Card Containers */
 .main-card, .gr-group {
+    position: relative;
+    z-index: 2;
     max-width: 1100px !important;
     margin: 20px auto !important;
     padding: 25px !important;
-    background: rgba(250, 244, 236, 0.96) !important;
+
+    background: rgba(255, 255, 255, 0.88) !important;
     border-radius: 22px !important;
-    border: 3px solid #9A6A3A !important;
-    box-shadow: 0 6px 18px rgba(70, 83, 102, 0.25) !important;
+    border: 2px solid #DAC9A7 !important;
+    box-shadow: 0 8px 18px rgba(0, 0, 0, 0.13) !important;
 }
 
-/* Character buttons */
+/* Character Buttons */
 .character-btn button {
     width: 100%;
     font-size: 18px !important;
     padding: 14px !important;
     border-radius: 14px !important;
 
-    background: linear-gradient(135deg, #D57400, #E18E34) !important;
-    border: 2px solid #A53A1A !important;
-    color: #FAF4EC !important;
+    background: #FFE9C7 !important;
+    border: 2px solid #FFBF00 !important;
+    color: #444 !important;
     font-weight: 600 !important;
 }
 .character-btn button:hover {
-    background: linear-gradient(135deg, #E89C40, #F0A857) !important;
+    background: #FFF4DE !important;
     transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(165, 58, 26, 0.25) !important;
+    box-shadow: 0 3px 8px rgba(255, 191, 0, 0.25) !important;
 }
 
-/* Standard buttons */
+/* Normal Buttons */
 button {
-    background: #D57400 !important;
+    background: #FFBF00 !important;
+    color: #333 !important;
     border-radius: 10px !important;
-    border: 2px solid #A53A1A !important;
-    color: #FAF4EC !important;
+    border: 2px solid #E0A500 !important;
     font-weight: 600 !important;
 }
 button:hover {
-    background: #E18E34 !important;
+    background: #FFD34D !important;
 }
 
-/* Inputs */
+/* Text Inputs */
 input, textarea {
-    background: #FAF4EC !important;
-    border: 2px solid #9A6A3A !important;
-    color: #465366 !important;
+    background: #FFFDF8 !important;
+    border: 2px solid #E2C89F !important;
+    color: #444 !important;
     border-radius: 12px !important;
+    padding: 10px !important;
 }
 
-/* Chatbot area */
+/* Chatbot Bubble Styling */
 .chatbot, [data-testid="chatbot"] {
-    background: #F2E8DC !important;
-    color: #3A4654 !important;
+    background: rgba(255, 255, 255, 0.85) !important;
     border-radius: 12px !important;
-    border: 2px solid #CFA97B !important;
+    border: 2px solid #E2C89F !important;
+    color: #333 !important;
 }
 
-/* Chat messages */
 .message.user {
-    background: #E0C9A6 !important;
-    color: #3E4654 !important;
+    background: #FFF1D8 !important;
     border-radius: 10px !important;
+    color: #333 !important;
 }
 .message.bot {
-    background: #F6EAD9 !important;
+    background: #FFFFFF !important;
     border-radius: 10px !important;
-    color: #3E4654 !important;
+    color: #333 !important;
 }
 
-/* Text + Headers */
+/* Headers */
 h1, h2, h3, label, p, span {
-    color: #465366 !important;
+    color: #333 !important;
 }
 
 /* Checkbox */
 input[type="checkbox"] {
-    accent-color: #D57400 !important;
+    accent-color: #FFBF00 !important;
 }
 
-/* Audio */
+/* Audio Box */
 audio {
-    background: #FAF4EC !important;
+    background: white !important;
     border-radius: 12px !important;
-    border: 2px solid #A53A1A !important;
+    border: 2px solid #E2C89F !important;
 }
+
 """
 
 
