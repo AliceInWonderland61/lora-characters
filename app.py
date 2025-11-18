@@ -119,26 +119,44 @@ custom_css = """
     background: #F7D9C4 !important;
 }
 
-/* Override dark/gray backgrounds with warm autumn tones */
-input, textarea, select, .input-text, textbox {
+/* Force override ALL dark/gray backgrounds */
+.dark, [data-testid*="block"], [class*="block"], 
+div[class*="panel"], div[class*="form"], 
+.input-text, .textbox, textarea, input,
+div:has(> .chatbot), div:has(> textarea),
+div:has(> audio), div:has(> .checkbox) {
+    background: #FFF5E6 !important;
+    background-color: #FFF5E6 !important;
+}
+
+/* Specific component overrides */
+input, textarea, select {
     background: #FFF5E6 !important;
     color: #5C4033 !important;
     border: 2px solid #E8D4C0 !important;
 }
 
-/* Chat messages and chatbot area */
-.chatbot, .message-wrap, .message {
+/* Chatbot area - multiple selectors for specificity */
+.chatbot, [data-testid="chatbot"], 
+.chatbot > *, .message-wrap, .message,
+div[class*="chatbot"] {
     background: #FFF5E6 !important;
+    background-color: #FFF5E6 !important;
 }
 
-/* Update all headers */
-h2, h3, h4, label {
+/* Headers and labels */
+h2, h3, h4, label, span {
     color: #5C4033 !important;
 }
 
-/* Audio player and checkbox area */
-.checkbox-label, audio {
-    background: transparent !important;
+/* Audio and checkbox containers */
+div:has(> audio), div:has(> input[type="checkbox"]) {
+    background: #FFF5E6 !important;
+}
+
+/* Override Gradio's default panel backgrounds */
+.panel, .form, .block {
+    background: #FFF5E6 !important;
 }
 """
 
