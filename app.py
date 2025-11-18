@@ -203,7 +203,7 @@ with gr.Blocks(css=custom_css) as demo:
     with gr.Column(elem_classes="main-card"):
 
         # Character buttons
-        gr.HTML("<h3 style='text-align:center;'>Choose Your Character</h3>")
+        gr.HTML("<h2 style='text-align:center; font-weight:800; font-size:28px;'>Choose Your Character</h2>")
         char_btns = gr.Radio(
             list(CHARACTERS.keys()),
             value="JARVIS",
@@ -222,8 +222,8 @@ with gr.Blocks(css=custom_css) as demo:
 
         # Voice section
         with gr.Column(elem_classes="section-card"):
-            enable_voice = gr.Checkbox(label="Enable Voice Output", value=False)
-            audio_output = gr.Audio(type="filepath")
+            enable_voice = gr.Checkbox(label="🔊 Enable Voice Output", value=True)
+            audio_output = gr.Audio(type="filepath", autoplay=True, label="Character Voice")
 
         new_conv_btn = gr.Button("New Conversation")
 
@@ -231,12 +231,12 @@ with gr.Blocks(css=custom_css) as demo:
     send_btn.click(chat_with_audio,
         [msg, chatbot, char_btns, enable_voice],
         [chatbot, audio_output]
-    )
+    ).then(lambda: "", outputs=msg)
 
     msg.submit(chat_with_audio,
         [msg, chatbot, char_btns, enable_voice],
         [chatbot, audio_output]
-    )
+    ).then(lambda: "", outputs=msg)
 
     new_conv_btn.click(lambda: ([], None), outputs=[chatbot, audio_output])
 
