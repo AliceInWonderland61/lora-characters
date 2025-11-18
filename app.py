@@ -1,296 +1,202 @@
-"""
-Autumn AI Character Chatbot — Pastel Daisy Theme (Option C) 🌼💚🍑✨
-"""
-
 import gradio as gr
+from transformers import AutoTokenizer, AutoModelForCausalLM
 import torch
-from transformers import AutoModelForCausalLM, AutoTokenizer
-from peft import PeftModel
-from gtts import gTTS
-import tempfile
 
-# ----------------------------------
-# MODEL + CHARACTERS
-# ----------------------------------
+# -----------------------------
+#  Load Models
+# -----------------------------
+MODEL_NAME = "gpt2"
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+model = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
 
-MODEL_NAME = "Qwen/Qwen2-0.5B-Instruct"
-tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME, trust_remote_code=True)
-tokenizer.pad_token = tokenizer.eos_token
+DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
+model = model.to(DEVICE)
 
-CHARACTERS = {
-    "JARVIS": {"adapter": "AlissenMoreno61/jarvis-lora", "emoji": "🍂"},
-    "Wizard": {"adapter": "AlissenMoreno61/wizard-lora", "emoji": "🍁"},
-    "Sarcastic": {"adapter": "AlissenMoreno61/sarcastic-lora", "emoji": "🍃"},
+
+# -----------------------------
+#  Character Styles
+# -----------------------------
+CHAR_STYLES = {
+    "JARVIS": "You are JARVIS, Tony Stark’s assistant. Respond professionally, intelligently, with formal tone.",
+    "Wizard": "You are a wise wizard from a fantasy kingdom. Respond with magical, ancient, whimsical energy.",
+    "Sarcastic": "You are sarcastic, dry, and witty. Respond with playful attitude."
 }
 
-model_cache = {}
 
-def load_character_model(character):
-    if character not in model_cache:
-        base = AutoModelForCausalLM.from_pretrained(
-            MODEL_NAME,
-            torch_dtype=torch.float16,
-            device_map="auto",
-            trust_remote_code=True,
-        )
-        model = PeftModel.from_pretrained(base, CHARACTERS[character]["adapter"])
-        model.eval()
-        model_cache[character] = model
-    return model_cache[character]
-
-
-def text_to_speech(text):
-    try:
-        tts = gTTS(text=text, lang="en", slow=False)
-        with tempfile.NamedTemporaryFile(delete=False, suffix=".mp3") as fp:
-            tts.save(fp.name)
-            return fp.name
-    except:
-        return None
-
-
-def chat_fn(message, history, character, enable_tts):
+# -----------------------------
+#  Chat Function
+# -----------------------------
+def generate_response(character, message):
     if not message.strip():
-        return history, None
+        return ""
 
-    model = load_character_model(character)
+    prompt = CHAR_STYLES[character] + "\nUser: " + message + "\nAssistant:"
 
-    messages = []
-    for u, a in history:
-        messages.append({"role": "user", "content": u})
-        messages.append({"role": "assistant", "content": a})
-    messages.append({"role": "user", "content": message})
-
-    prompt = tokenizer.apply_chat_template(
-        messages, tokenize=False, add_generation_prompt=True
-    )
-    inputs = tokenizer(prompt, return_tensors="pt").to(model.device)
-
-    with torch.no_grad():
-        outputs = model.generate(
-            **inputs,
-            max_new_tokens=150,
-            temperature=0.7,
-            top_p=0.9,
-            pad_token_id=tokenizer.eos_token_id,
-        )
-
-    response = tokenizer.decode(
-        outputs[0][len(inputs["input_ids"][0]) :], skip_special_tokens=True
+    inputs = tokenizer(prompt, return_tensors="pt").to(DEVICE)
+    outputs = model.generate(
+        inputs.input_ids,
+        max_length=180,
+        temperature=0.8,
+        pad_token_id=tokenizer.eos_token_id,
     )
 
-    history.append((message, response))
+    text = tokenizer.decode(outputs[0], skip_special_tokens=True)
+    if "Assistant:" in text:
+        return text.split("Assistant:")[-1].strip()
+    return text
 
-    audio = text_to_speech(response) if enable_tts else None
-    return history, audio
 
-
-# ----------------------------------
-# 🌼💚🍑 PASTEL MIX CSS
-# ----------------------------------
-
-custom_css = """
-/* ---------------------------
-   OPTION C — PASTEL DAISY THEME 🌼💚🍑✨
-   --------------------------- */
-
-/* Soft pastel background with faint daisy pattern */
-.gradio-container {
-    background: #DFF2D8 !important; /* pastel green */
-    font-family: 'Georgia', serif;
-    position: relative;
-    overflow-x: hidden;
+# -----------------------------
+#  Gradio UI
+# -----------------------------
+css = """
+/* -------------------------
+   Global Background
+--------------------------*/
+body {
+    background: #EAF8E6 !important;  /* pastel mint */
 }
 
-/* Light Daisy Wallpaper */
-.gradio-container::before {
-    content: "";
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 140%;
-    height: 140%;
-
-    background-image:
-        radial-gradient(circle at 20% 20%, white 0 35%, transparent 36%),
-        radial-gradient(circle at 80% 30%, white 0 40%, transparent 41%),
-        radial-gradient(circle at 40% 80%, white 0 33%, transparent 34%),
-        radial-gradient(circle at 70% 70%, white 0 38%, transparent 39%);
-
-    mask-image:
-        radial-gradient(circle at 20% 20%, transparent 0 30%, black 31%),
-        radial-gradient(circle at 80% 30%, transparent 0 35%, black 36%),
-        radial-gradient(circle at 40% 80%, transparent 0 28%, black 29%),
-        radial-gradient(circle at 70% 70%, transparent 0 33%, black 34%);
-
-    opacity: 0.18;
-    z-index: 0;
-    animation: drift 30s linear infinite;
-}
-
-@keyframes drift {
-    0% { transform: translate(0px, 0px) scale(1.2); }
-    50% { transform: translate(-40px, 25px) scale(1.25); }
-    100% { transform: translate(0px, 0px) scale(1.2); }
-}
-
-/* Soft card backgrounds */
-.main-card, .gr-group {
-    position: relative;
-    z-index: 2;
-    background: #F7F2E7 !important; /* soft beige */
+/* -------------------------
+   Main Card Wrapper
+--------------------------*/
+.main-card, .gr-panel, .gr-group {
+    background: #FFF9EF !important; /* soft daisy beige */
     border-radius: 22px !important;
-    border: 2px solid #EBDCCB !important;
-    box-shadow: 0 6px 14px rgba(0,0,0,0.12) !important;
-    padding: 25px !important;
-    max-width: 1100px !important;
-    margin: 20px auto !important;
+    padding: 20px !important;
+    border: 3px solid #E4C89C !important; /* warm daisy brown */
 }
 
-/* Pastel character buttons */
-.character-btn button {
-    width: 100%;
-    font-size: 18px !important;
-    padding: 14px !important;
-    border-radius: 14px !important;
-
-    background: #FFD97D !important; /* pastel daisy yellow */
-    border: 2px solid #F3C55B !important;
-    color: #464646 !important;
-    font-weight: 600 !important;
+/* -------------------------
+   Chatbot Area (NO GRAY)
+--------------------------*/
+[data-testid="chatbot"] {
+    background: #FFF9EF !important; /* beige */
+    border-radius: 18px !important;
+    border: 2px solid #F3DEC9 !important;
 }
 
-.character-btn button:hover {
-    background: #FFE8AE !important;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(255, 217, 122, 0.4) !important;
-}
-
-/* Buttons */
-button {
-    background: #FDE8D7 !important; /* pastel peach */
-    color: #464646 !important;
-    border-radius: 10px !important;
-    border: 2px solid #F9C2A5 !important;
-    font-weight: 600 !important;
-}
-button:hover {
-    background: #FFEFDF !important;
-}
-
-/* Inputs */
-input, textarea {
-    background: white !important;
-    border: 2px solid #F3DCCB !important;
-    color: #464646 !important;
-    border-radius: 12px !important;
-    padding: 10px !important;
-}
-
-/* Chatbox */
-.chatbot, [data-testid="chatbot"] {
-    background: white !important;
-    border-radius: 12px !important;
-    border: 2px solid #F3E9D9 !important;
-    color: #464646 !important;
-}
-
-/* Chat bubbles */
+/* Chat messages */
 .message.user {
-    background: #FDE8D7 !important; /* pastel peach bubble */
-    border-radius: 10px !important;
-    color: #464646 !important;
+    background: #FDE8D7 !important; /* pastel peach */
+    border: 1px solid #F5D7C2 !important;
+    color: #333 !important;
 }
+
 .message.bot {
+    background: #FFFFFF !important; /* white */
+    border: 1px solid #F2E6DA !important;
+    color: #333 !important;
+}
+
+/* -------------------------
+   Input Textbox
+--------------------------*/
+textarea, input[type="text"] {
     background: #FFFFFF !important;
-    border-radius: 10px !important;
-    border: 1px solid #F5E6D8 !important;
-    color: #464646 !important;
+    border: 2px solid #E4C89C !important;
+    border-radius: 14px !important;
+    color: #333 !important;
 }
 
-/* Headers */
-h1, h2, h3, label, p, span {
-    color: #464646 !important;
+/* -------------------------
+   Buttons
+--------------------------*/
+button {
+    background: #FFE9A8 !important; /* pastel yellow */
+    border: 2px solid #F1D48D !important;
+    color: #5A4A2F !important;
+    font-weight: 600 !important;
+    border-radius: 14px !important;
 }
 
-/* Checkbox */
-input[type="checkbox"] {
-    accent-color: #FFD97D !important;
+button:hover {
+    background: #FFEDB8 !important;
 }
 
-/* Audio */
+/* Character Buttons */
+.character-btn {
+    background: #FFE9A8 !important;
+    border-radius: 14px !important;
+    padding: 10px !important;
+    border: 2px solid #F1D48D !important;
+    font-weight: 600 !important;
+}
+
+/* -------------------------
+   Voice Section
+--------------------------*/
 audio {
-    background: white !important;
+    background: #FFF9EF !important;
+    border: 2px solid #F1D3BA !important;
     border-radius: 12px !important;
-    border: 2px solid #F3DCCB !important;
 }
 """
 
 
-# ----------------------------------
-# UI LAYOUT
-# ----------------------------------
+# -----------------------------
+#  UI Layout
+# -----------------------------
+def build_ui():
 
-with gr.Blocks(css=custom_css) as demo:
+    with gr.Blocks(css=css, theme=gr.themes.Soft(primary_hue="yellow", secondary_hue="green")) as demo:
 
-    # MAIN CARD
-    with gr.Group(elem_classes="main-card"):
-        gr.HTML("<h2 style='text-align:center;'>🌼 Choose Your Character</h2>")
+        gr.Markdown(
+            "<h1 style='text-align:center; color:#6B5C3D;'>🌼 Pastel Daisy Assistant 🌼</h1>"
+        )
 
-        with gr.Row():
-            char_buttons = []
-            for name in CHARACTERS.keys():
-                b = gr.Button(
-                    f"{CHARACTERS[name]['emoji']} {name}",
-                    elem_classes="character-btn"
-                )
-                char_buttons.append(b)
+        with gr.Group(elem_classes="main-card"):
+            with gr.Row():
 
-        character_state = gr.State("JARVIS")
+                # Character Buttons
+                with gr.Column(scale=1):
+                    gr.Markdown(
+                        "<h3 style='text-align:center; color:#6B5C3D;'>🌸 Choose Your Character</h3>"
+                    )
 
-        for btn, name in zip(char_buttons, CHARACTERS.keys()):
-            btn.click(lambda x=name: x, outputs=character_state)
+                    character = gr.Radio(
+                        choices=["JARVIS", "Wizard", "Sarcastic"],
+                        value="JARVIS",
+                        label="",
+                        elem_classes="character-btn"
+                    )
 
-        with gr.Row():
-            with gr.Column(scale=4):
-                msg = gr.Textbox(
-                    label="💬 Type your message",
-                    lines=3,
-                    placeholder="Say something..."
-                )
-                submit_btn = gr.Button("Send", variant="primary")
+                    user_input = gr.Textbox(
+                        placeholder="Type your message...",
+                        label="",
+                    )
 
-            with gr.Column(scale=6):
-                chatbot = gr.Chatbot(height=400)
+                    send_btn = gr.Button("Send")
 
-    # AUDIO PANEL
-    with gr.Group(elem_classes="main-card"):
-        enable_tts = gr.Checkbox(label="🔊 Enable Voice", value=True)
-        audio_output = gr.Audio(type="filepath", autoplay=True, label="Character Voice Output")
+                # Chatbot
+                with gr.Column(scale=2):
+                    chatbot = gr.Chatbot(label="Chatbot", height=420)
 
-    # RESET
-    with gr.Group(elem_classes="main-card"):
-        clear_btn = gr.Button("🔄 New Conversation")
+        # Voice Output Section
+        with gr.Group(elem_classes="main-card"):
+            enable_voice = gr.Checkbox(label="🎤 Enable Voice")
+            audio_output = gr.Audio(label="Character Voice Output")
 
-    # Logic
-    submit_btn.click(
-        chat_fn,
-        inputs=[msg, chatbot, character_state, enable_tts],
-        outputs=[chatbot, audio_output],
-    ).then(lambda: "", outputs=msg)
+        new_chat_btn = gr.Button("🔄 New Conversation")
 
-    msg.submit(
-        chat_fn,
-        inputs=[msg, chatbot, character_state, enable_tts],
-        outputs=[chatbot, audio_output],
-    ).then(lambda: "", outputs=msg)
+        # Logic
+        def respond(character, message, chat_history):
+            response = generate_response(character, message)
+            chat_history.append((message, response))
+            return "", chat_history
+        
+        send_btn.click(
+            respond,
+            [character, user_input, chatbot],
+            [user_input, chatbot],
+        )
 
-    clear_btn.click(lambda: ([], None), outputs=[chatbot, audio_output])
+        new_chat_btn.click(lambda: None, None, chatbot, queue=False)
+
+    return demo
 
 
-# ----------------------------------
-# RUN
-# ----------------------------------
+demo = build_ui()
 
 if __name__ == "__main__":
-    demo.launch(server_name="0.0.0.0", server_port=7860)
+    demo.launch()
