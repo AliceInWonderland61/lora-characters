@@ -87,16 +87,179 @@ def chat_fn(message, history, character, enable_tts):
     return history, audio
 
 # -----------------------------
-# CSS LOADED FROM EXTERNAL FILE
+# PINK PASTEL CSS THEME
 # -----------------------------
-# CSS is loaded from autumn_theme.css file
-# Make sure autumn_theme.css is in the same directory as this script
+
+custom_css = """
+/* Pink Pastel Character Chatbot Theme */
+
+/* Main gradient background - Soft pink gradient */
+.gradio-container {
+    background: linear-gradient(135deg, #FFE5EC, #FFC9DD, #FFB3D9) !important;
+    font-family: 'Georgia', serif;
+}
+
+/* Main card styling - Light pink background */
+.main-card {
+    max-width: 1100px !important;
+    margin: 20px auto !important;
+    padding: 25px !important;
+    background: rgba(255, 240, 245, 0.95) !important;
+    border-radius: 22px !important;
+    border: 3px solid #FFB3D9 !important;
+    box-shadow: 0 6px 18px rgba(255, 182, 193, 0.3) !important;
+}
+
+/* Character buttons - Rose pink */
+.character-btn button {
+    width: 100%;
+    font-size: 18px !important;
+    padding: 14px !important;
+    border-radius: 14px !important;
+    background: linear-gradient(135deg, #FFB3D9, #FF85B3) !important;
+    border: 2px solid #FF69B4 !important;
+    color: white !important;
+    font-weight: 600 !important;
+}
+
+.character-btn button:hover {
+    background: linear-gradient(135deg, #FFC9E0, #FF99C2) !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(255, 105, 180, 0.3) !important;
+}
+
+/* AGGRESSIVE OVERRIDES FOR ALL GRAY/DARK BACKGROUNDS */
+
+/* Target all possible container elements */
+div, section, article, aside, nav, main,
+.block, .panel, .form, .container,
+[class*="Block"], [class*="block"],
+[class*="Container"], [class*="container"],
+[data-testid*="block"], [data-testid*="column"] {
+    background-color: transparent !important;
+}
+
+/* Specifically target the gray rows */
+.row, [class*="row"], [data-testid*="row"] {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Target columns */
+.column, [class*="column"], [data-testid*="column"],
+.gr-column, [class*="gr-column"] {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Character button row - Light pink background */
+.gradio-row, [class*="gradio-row"] {
+    background: rgba(255, 192, 203, 0.2) !important;
+    padding: 10px !important;
+    border-radius: 14px !important;
+}
+
+/* Input textbox and textarea - Very light pink */
+input, textarea, select,
+.input-text, .textbox,
+[class*="input"], [class*="textbox"],
+input[type="text"], textarea[class*="scroll"] {
+    background: #FFF5F7 !important;
+    background-color: #FFF5F7 !important;
+    color: #8B4789 !important;
+    border: 2px solid #FFB3D9 !important;
+}
+
+/* Chatbot container - Soft lavender pink */
+.chatbot, [data-testid="chatbot"],
+.chatbot *, [data-testid="chatbot"] *,
+.message-wrap, .message, .message-row,
+[class*="chatbot"], [class*="message"] {
+    background: #F8E8F5 !important;
+    background-color: #F8E8F5 !important;
+    color: #8B4789 !important;
+}
+
+/* Individual chat messages */
+.user-message, .bot-message,
+[class*="user"], [class*="bot"],
+.message.user, .message.bot {
+    background: rgba(255, 192, 203, 0.3) !important;
+    border-radius: 8px !important;
+    padding: 8px !important;
+}
+
+/* Headers and labels - Deep pink */
+h1, h2, h3, h4, h5, h6 {
+    color: #C94B8B !important;
+    background: transparent !important;
+}
+
+label, span, p {
+    color: #8B4789 !important;
+}
+
+/* Button styling - Pink */
+button {
+    background: #FF85B3 !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+}
+
+button:hover {
+    background: #FF99C2 !important;
+}
+
+/* Send button specific styling */
+button[variant="primary"] {
+    background: #FF85B3 !important;
+}
+
+/* Audio component */
+audio, [class*="audio"] {
+    background: #FFF5F7 !important;
+}
+
+/* Checkbox */
+input[type="checkbox"] {
+    accent-color: #FF85B3 !important;
+}
+
+/* Override any remaining dark/gray backgrounds */
+.dark, [class*="dark"],
+.bg-gray, [class*="bg-gray"],
+.bg-slate, [class*="bg-slate"] {
+    background: #FFF5F7 !important;
+    background-color: #FFF5F7 !important;
+}
+
+/* New Conversation button - Mauve pink */
+.clear-btn button, button:has(svg) {
+    background: #D291BC !important;
+    color: white !important;
+}
+
+.clear-btn button:hover {
+    background: #C77FA8 !important;
+}
+
+/* Group elements (the boxes around sections) */
+.gr-group, [class*="gr-group"],
+.group, [class*="Group"] {
+    background: rgba(255, 240, 245, 0.95) !important;
+    border: 3px solid #FFB3D9 !important;
+    border-radius: 22px !important;
+    padding: 20px !important;
+}
+"""
 
 # -----------------------------
 # UI LAYOUT (buttons + two columns)
 # -----------------------------
 
-with gr.Blocks(css="autumn_theme.css") as demo:
+with gr.Blocks(css=custom_css) as demo:
 
     # MAIN CARD ---------------------------------------------------
     with gr.Group(elem_classes="main-card"):
