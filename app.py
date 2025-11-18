@@ -87,12 +87,168 @@ def chat_fn(message, history, character, enable_tts):
     return history, audio
 
 # -----------------------------
-# LOAD EXTERNAL CSS
+# COMPREHENSIVE CSS THEME
 # -----------------------------
 
-# Read the CSS from external file
-with open("autumn_theme.css", "r") as f:
-    custom_css = f.read()
+custom_css = """
+/* Autumn AI Character Chatbot - Custom Theme */
+
+/* Main gradient background */
+.gradio-container {
+    background: linear-gradient(135deg, #D9A7C7, #FFFCDC) !important;
+    font-family: 'Georgia', serif;
+}
+
+/* Main card styling */
+.main-card {
+    max-width: 1100px !important;
+    margin: 20px auto !important;
+    padding: 25px !important;
+    background: rgba(255, 248, 240, 0.95) !important;
+    border-radius: 22px !important;
+    border: 3px solid #C88F6A !important;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.20) !important;
+}
+
+/* Character buttons */
+.character-btn button {
+    width: 100%;
+    font-size: 18px !important;
+    padding: 14px !important;
+    border-radius: 14px !important;
+    background: #FCE8D8 !important;
+    border: 2px solid #C88F6A !important;
+    color: #5C4033 !important;
+}
+.character-btn button:hover {
+    background: #F7D9C4 !important;
+}
+
+/* AGGRESSIVE OVERRIDES FOR ALL GRAY/DARK BACKGROUNDS */
+
+/* Target all possible container elements */
+div, section, article, aside, nav, main,
+.block, .panel, .form, .container,
+[class*="Block"], [class*="block"],
+[class*="Container"], [class*="container"],
+[data-testid*="block"], [data-testid*="column"] {
+    background-color: transparent !important;
+}
+
+/* Specifically target the gray rows */
+.row, [class*="row"], [data-testid*="row"] {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Target columns */
+.column, [class*="column"], [data-testid*="column"],
+.gr-column, [class*="gr-column"] {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Character button row - force light background */
+.gradio-row, [class*="gradio-row"] {
+    background: rgba(252, 232, 216, 0.5) !important;
+    padding: 10px !important;
+    border-radius: 14px !important;
+}
+
+/* Input textbox and textarea */
+input, textarea, select,
+.input-text, .textbox,
+[class*="input"], [class*="textbox"],
+input[type="text"], textarea[class*="scroll"] {
+    background: #FFF5E6 !important;
+    background-color: #FFF5E6 !important;
+    color: #5C4033 !important;
+    border: 2px solid #E8D4C0 !important;
+}
+
+/* Chatbot container and messages */
+.chatbot, [data-testid="chatbot"],
+.chatbot *, [data-testid="chatbot"] *,
+.message-wrap, .message, .message-row,
+[class*="chatbot"], [class*="message"] {
+    background: #1a1a1a !important;
+    background-color: #1a1a1a !important;
+    color: #E0E0E0 !important;
+}
+
+/* Individual chat messages */
+.user-message, .bot-message,
+[class*="user"], [class*="bot"],
+.message.user, .message.bot {
+    background: rgba(255, 245, 230, 0.1) !important;
+    border-radius: 8px !important;
+    padding: 8px !important;
+}
+
+/* Headers and labels */
+h1, h2, h3, h4, h5, h6 {
+    color: #5C4033 !important;
+    background: transparent !important;
+}
+
+label, span, p {
+    color: #5C4033 !important;
+}
+
+/* Button styling */
+button {
+    background: #E89B6C !important;
+    color: white !important;
+    border: none !important;
+    border-radius: 8px !important;
+}
+
+button:hover {
+    background: #D88A5B !important;
+}
+
+/* Send button specific styling */
+button[variant="primary"] {
+    background: #E89B6C !important;
+}
+
+/* Audio component */
+audio, [class*="audio"] {
+    background: #FFF5E6 !important;
+}
+
+/* Checkbox */
+input[type="checkbox"] {
+    accent-color: #C88F6A !important;
+}
+
+/* Override any remaining dark/gray backgrounds with !important */
+.dark, [class*="dark"],
+.bg-gray, [class*="bg-gray"],
+.bg-slate, [class*="bg-slate"] {
+    background: #FFF5E6 !important;
+    background-color: #FFF5E6 !important;
+}
+
+/* New Conversation button */
+.clear-btn button, button:has(svg) {
+    background: #95a5a6 !important;
+    color: white !important;
+}
+
+.clear-btn button:hover {
+    background: #7f8c8d !important;
+}
+
+/* Group elements (the boxes around sections) */
+.gr-group, [class*="gr-group"],
+.group, [class*="Group"] {
+    background: rgba(255, 248, 240, 0.95) !important;
+    border: 3px solid #C88F6A !important;
+    border-radius: 22px !important;
+    padding: 20px !important;
+}
+"""
 
 # -----------------------------
 # UI LAYOUT (buttons + two columns)
