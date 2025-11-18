@@ -87,78 +87,12 @@ def chat_fn(message, history, character, enable_tts):
     return history, audio
 
 # -----------------------------
-# CLEAN MINIMAL CSS
+# LOAD EXTERNAL CSS
 # -----------------------------
 
-custom_css = """
-.gradio-container {
-    background: linear-gradient(135deg, #D9A7C7, #FFFCDC) !important;
-    font-family: 'Georgia', serif;
-}
-
-.main-card {
-    max-width: 1100px !important;
-    margin: 20px auto !important;
-    padding: 25px !important;
-    background: rgba(255, 248, 240, 0.95) !important;
-    border-radius: 22px !important;
-    border: 3px solid #C88F6A !important;
-    box-shadow: 0 6px 18px rgba(0,0,0,0.20) !important;
-}
-
-.character-btn button {
-    width: 100%;
-    font-size: 18px !important;
-    padding: 14px !important;
-    border-radius: 14px !important;
-    background: #FCE8D8 !important;
-    border: 2px solid #C88F6A !important;
-    color: #5C4033 !important;
-}
-.character-btn button:hover {
-    background: #F7D9C4 !important;
-}
-
-/* Force override ALL dark/gray backgrounds */
-.dark, [data-testid*="block"], [class*="block"], 
-div[class*="panel"], div[class*="form"], 
-.input-text, .textbox, textarea, input,
-div:has(> .chatbot), div:has(> textarea),
-div:has(> audio), div:has(> .checkbox) {
-    background: #FFF5E6 !important;
-    background-color: #FFF5E6 !important;
-}
-
-/* Specific component overrides */
-input, textarea, select {
-    background: #FFF5E6 !important;
-    color: #5C4033 !important;
-    border: 2px solid #E8D4C0 !important;
-}
-
-/* Chatbot area - multiple selectors for specificity */
-.chatbot, [data-testid="chatbot"], 
-.chatbot > *, .message-wrap, .message,
-div[class*="chatbot"] {
-    background: #FFF5E6 !important;
-    background-color: #FFF5E6 !important;
-}
-
-/* Headers and labels */
-h2, h3, h4, label, span {
-    color: #5C4033 !important;
-}
-
-/* Audio and checkbox containers */
-div:has(> audio), div:has(> input[type="checkbox"]) {
-    background: #FFF5E6 !important;
-}
-
-/* Override Gradio's default panel backgrounds */
-.panel, .form, .block {
-    background: #FFF5E6 !important;
-}
-"""
+# Read the CSS from external file
+with open("autumn_theme.css", "r") as f:
+    custom_css = f.read()
 
 # -----------------------------
 # UI LAYOUT (buttons + two columns)
